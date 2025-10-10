@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 export const generateSummaryFromGemini = async (pdfText: string) => {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash", // Using flash for speed and cost-effectiveness
+      model: "gemini-2.0-flash", // Using flash for speed and cost-effectiveness
       generationConfig: {
         temperature: 0.7,
         maxOutputTokens: 1500,

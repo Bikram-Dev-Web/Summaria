@@ -168,6 +168,8 @@ export async function storePdfSummaryAction( {
   }
   //revalidate the cache
   revalidatePath(`/summaries/${saveSummary.id}`);
+
+
     return {
     success: true,
     message: "PDF summary saved successfully",

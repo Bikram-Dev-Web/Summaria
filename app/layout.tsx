@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Source_Sans_3 as FontSans} from "next/font/google";
+import { Source_Sans_3 as FontSans } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/common/header";
 import Footer from "@/components/common/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
 
 const fontSans = FontSans({
   variable: "--font-sans",
-  subsets: ["latin"],weight: [ "200", "300", "400", "500", "600", "700", "800", "900"],
-}); 
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,17 +25,17 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-    <html lang="en">
-      <body
-        className={`font-sans ${fontSans.variable} antialiased`}
-      ><div className="flex min-h-screen flex-col">
-        <Header></Header>
-          <main className="flex-1">{children}</main> 
-           <Footer></Footer>
-           </div>
-           <Toaster/>
-      </body>
-    </html>
+      <html lang="en">
+        <body className={`font-sans ${fontSans.variable} antialiased`}>
+          <div className="flex min-h-screen flex-col">
+            <Header></Header>
+            <main className="flex-1">{children}</main>
+            <Footer></Footer>
+          </div>
+          <Toaster />
+          
+        </body>
+      </html>
     </ClerkProvider>
   );
 }
