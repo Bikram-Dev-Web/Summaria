@@ -2,11 +2,13 @@
 
 import UploadFormInput from "@/components/upload/upload-form-input";
 import { useUploadThing } from "@/utils/uploadthings";
-import { title } from "process";
 import { use, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { generatePdfSummary } from "@/action/upload-action";
+import { generatePdfSummary, storePdfSummaryAction } from "@/action/upload-action";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
+import { fi } from "zod/v4/locales";
 
 const schema = z.object({
   file: z
@@ -22,6 +24,7 @@ export default function UploadForm() {
   // const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [isLoading , setIsLoading] = useState(false);
+  const router = useRouter();
 
   const { startUpload, routeConfig } = useUploadThing("pdfUploader", {
     onClientUploadComplete: () => {
@@ -84,12 +87,25 @@ setIsLoading(false);
       const { data = null, message = null } = result || {};
 
       if (data) {
+        let storeResult: any;
         toast.info("Saving PDF", {
           description: "Hang tight! We are saving your summary!",
         });
-        formRef.current?.reset();
-        //if(data.summary)
-        //save the data to the database
+     
+        if(data.summary){
+          storeResult= await storePdfSummaryAction({
+            summary: data.summary,
+            fileName: resp[0].serverData.file.name,
+            title: data.title,
+            fileUrl: resp[0].serverData.file.url,
+          });
+          toast.success("PDF Summary generated", {
+            description: "Your PDF summary has been saved ",});
+
+               formRef.current?.reset();
+               router.push(`/summaries/${storeResult.data.id}`);
+               //redirect to the summary page
+        }
       }
 
       //summaraize the pdf using AI
@@ -99,6 +115,8 @@ setIsLoading(false);
       setIsLoading(false);
       console.error("Error occured", error);
       formRef.current?.reset();
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
