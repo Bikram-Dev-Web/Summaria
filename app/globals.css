@@ -1,9 +1,10 @@
 /* stylelint-disable  */
-@import url('https://fonts.googleapis.com/css2?family=Geist+Sans&family=Geist+Mono&display=swap')
-layer(base);
+@import url('https://fonts.googleapis.com/css2?family=Geist+Sans&family=Geist+Mono&display=swap');
+/* layer(base); */
 
 @import 'tailwindcss';
 @plugin 'tailwindcss-animate';
+/* @plugin 'tailwindcss-line-clamp'; */
 /* 
 @custom-variant dark {&:is(.dark *)}; */
 
@@ -211,4 +212,25 @@ layer(base);
 .animate-gradient-x {
   animation: gradient-x 3s ease infinite;
  
+}
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+@layer utilities {
+  .text-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* number of lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .text-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
