@@ -1,10 +1,9 @@
 import NavLink from "./nav-link";
 import { FileText } from "lucide-react";
 import { Button } from "../ui/button";
-import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/nextjs";
+import { Show, UserButton } from "@clerk/nextjs";
 
 export default function Header() {
-  const isLoggedIn = false; // Replace with actual authentication logic
   return (
     <nav className="container flex items-center justify-between py-4 lg:px-6 px-2 mx-auto">
       <div className="flex lg:flex-1">
@@ -15,26 +14,30 @@ export default function Header() {
           </span>
         </NavLink>
       </div>
+      
       <div className="flex flex-1 items-center justify-center gap-4">
         <NavLink href="/#pricing">Pricing</NavLink>
-        <SignedIn>
+        
+        {/* Replaced <SignedIn> with <Show when="signed-in"> */}
+        <Show when="signed-in">
           <NavLink href="/dashboard">Your summaria</NavLink>
-        </SignedIn>
+        </Show>
       </div>
-      <div className="flex lg:justify-center lg:flex-1">
-        <SignedIn>
+      
+      <div className="flex lg:justify-center lg:flex-1 items-center gap-4">
+        <Show when="signed-in">
           <div className="flex items-center gap-2 ">
             <NavLink href="/upload">Upload a PDF</NavLink>
             <div>Pro</div>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+            {/* Removed the redundant nested <SignedIn> wrapper here */}
+            <UserButton />
           </div>
-        </SignedIn>
-        <SignedOut>
-          {" "}
+        </Show>
+
+        {/* Fixed logic error: Show "Sign-In" link only when signed out */}
+        <Show when="signed-out">
           <NavLink href="/sign-in">Sign-In</NavLink>
-        </SignedOut>
+        </Show>
       </div>
     </nav>
   );
