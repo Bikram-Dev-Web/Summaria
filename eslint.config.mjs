@@ -19,13 +19,7 @@ const eslintConfig = [
     ],
   }),
   {
-    // 2. Register the prettier plugin explicitly
-    plugins: {
-      prettier: eslintPluginPrettier,
-    },
-    // 3. Now the rule will work perfectly
     rules: {
-      'prettier/prettier': 'error',
       'react/no-escape-entities': 'off',
     }
   }
