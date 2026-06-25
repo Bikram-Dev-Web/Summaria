@@ -1,104 +1,191 @@
+import { createBillingPortalSessionAction, createCheckoutSessionAction } from "@/action/billing-action";
+import { Button } from "@/components/ui/button";
+import { BASIC_PLAN, PRO_PLAN, getUserBillingSnapshot } from "@/lib/billing";
 import { cn } from "@/lib/utils";
+import { upsertUserFromClerk } from "@/lib/users";
+import { currentUser } from "@clerk/nextjs/server";
 import { ArrowRight, CheckIcon } from "lucide-react";
 import Link from "next/link";
 
 type PriceType = {
+  id: "basic" | "pro";
   name: string;
-  price: number;
+  priceLabel: string;
   description: string;
   items: string[];
-  paymentlink: string;
-  priceId: string;
-  id: string;
 };
 
-const plans = [
+const plans: PriceType[] = [
   {
     id: "basic",
     name: "Basic",
-    price: 9,
-    description: "For casual users",
-    items: ["5 PDF per month", "Standard Processing speed", "Email support"],
-    paymentlink: "",
-    priceId: "",
+    priceLabel: "Free",
+    description: "Perfect for getting started",
+    items: ["5 PDF summaries per month", "Standard processing speed", "Email support"],
   },
   {
     id: "pro",
     name: "Pro",
-    price: 19,
-    description: "For profesional users",
+    priceLabel: "$19",
+    description: "For power users who need more",
     items: [
       "Unlimited PDF summaries",
       "Priority processing",
-      "Markdown Export",
-      "24/7 priority support",
+      "Markdown export",
+      "Priority support",
     ],
-    paymentlink: "",
-    priceId: "",
   },
 ];
 
-const PricingCard = ({
+function PricingAction({
+  planId,
+  isSignedIn,
+  isCurrentPlan,
+}: {
+  planId: PriceType["id"];
+  isSignedIn: boolean;
+  isCurrentPlan: boolean;
+}) {
+  if (planId === BASIC_PLAN) {
+    return (
+      <Link
+        href={isSignedIn ? "/upload" : "/sign-up"}
+        className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-rose-100 bg-linear-to-r from-rose-400 to-rose-500 py-2 text-white transition-all hover:from-rose-500 hover:to-rose-600"
+      >
+        {isSignedIn ? "Start Uploading" : "Get Started Free"}
+        <ArrowRight size={18} />
+      </Link>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <Link
+        href="/sign-up"
+        className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-rose-900 bg-linear-to-r from-rose-800 to-rose-500 py-2 text-white transition-all hover:from-rose-500 hover:to-rose-800"
+      >
+        Start Pro
+        <ArrowRight size={18} />
+      </Link>
+    );
+  }
+
+  if (isCurrentPlan) {
+    return (
+      <form action={createBillingPortalSessionAction} className="w-full">
+        <Button
+          type="submit"
+          className="w-full rounded-full border-2 border-emerald-900 bg-linear-to-r from-emerald-600 to-teal-500 py-2 text-white hover:from-emerald-500 hover:to-teal-400"
+        >
+          Manage Billing
+          <ArrowRight size={18} />
+        </Button>
+      </form>
+    );
+  }
+
+  return (
+    <form action={createCheckoutSessionAction} className="w-full">
+      <Button
+        type="submit"
+        className="w-full rounded-full border-2 border-rose-900 bg-linear-to-r from-rose-800 to-rose-500 py-2 text-white hover:from-rose-500 hover:to-rose-800"
+      >
+        Upgrade to Pro
+        <ArrowRight size={18} />
+      </Button>
+    </form>
+  );
+}
+
+function PricingCard({
   id,
   name,
   description,
   items,
-  paymentlink,
-  price,
-  priceId,
-}: PriceType) => {
-  console.log("Plans:", plans);
+  priceLabel,
+  isSignedIn,
+  isCurrentPlan,
+}: PriceType & {
+  isSignedIn: boolean;
+  isCurrentPlan: boolean;
+}) {
   return (
-    <div className="relative w-full max-w-lg hover:scale-105 hover:transition-all duration-300">
-      <div className={cn(
-        "relative flex flex-col h-full z-10 gap-4 lg:gap-8 p-8 border-[1px] border-gray-500/20 rounded-2xl",id==='pro' && 'border-rose-500 border-2 gap-5')}>
-      <div className="flex justify-betweenitems-center gap-4">
-        <div>
-          {" "}
-          <p className=" text-lg lg:text-xl font-bold capitalize">{name}</p>
-          <p className="text-base-content/80 mt-2">{description}</p>
+    <div className="relative w-full max-w-lg transition-all duration-300 hover:scale-105">
+      <div
+        className={cn(
+          "relative z-10 flex h-full flex-col gap-4 rounded-2xl border-[1px] border-gray-500/20 p-8 lg:gap-8",
+          id === PRO_PLAN && "gap-5 border-2 border-rose-500"
+        )}
+      >
+        <div className="flex justify-between gap-4">
+          <div>
+            <p className="text-lg font-bold capitalize lg:text-xl">{name}</p>
+            <p className="mt-2 text-base-content/80">{description}</p>
+          </div>
+          {isCurrentPlan ? (
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+              Current Plan
+            </span>
+          ) : null}
         </div>
-      </div>
-      <div className="flex gap-2">
-        <p className="text-5xl tracking-tight font-extrabold">${price}</p>
-        <div className="flex flex-col justify-end mb-[4px]" >
-          <p className="text-xs uppercase font-semibold">USD</p>
-          <p className="text-xs">/month</p>
+
+        <div className="flex items-end gap-2">
+          <p className="text-5xl font-extrabold tracking-tight">{priceLabel}</p>
+          {id === PRO_PLAN ? (
+            <div className="mb-[4px] flex flex-col justify-end">
+              <p className="text-xs font-semibold uppercase">USD</p>
+              <p className="text-xs">/month</p>
+            </div>
+          ) : (
+            <p className="mb-[6px] text-sm text-gray-500">Forever</p>
+          )}
         </div>
-      </div>
-      <div className="space-y-2.5 leading-relaxed text-base flex-1">
-        {items.map((item, index) => (
-          <li key={index}  className="flex items-center gap-2">
-            <CheckIcon size={18}/>
-            <span>{item} </span></li>
-        ))}
-      </div>
-      <div className="space-y-2 flex justify-center w-full">
-        <Link 
-        href={paymentlink}
-        className={cn("w-full rounded-full flex items-center justify-center gap-2 bg-linear-to-r from-rose-800 to-rose-500 hover:from-rose-500 hover:to-rose-800 text-white border-2 py-2",
-          id==='pro'
-          ?'border-rose-900'
-          :'border-rose-100 from-rose-400 to-rose-500'
-         )}
-        >Buy Now
-        <ArrowRight size={18}/></Link>
-      </div>
+
+        <div className="flex-1 space-y-2.5 text-base leading-relaxed">
+          {items.map((item, index) => (
+            <li key={index} className="flex items-center gap-2">
+              <CheckIcon size={18} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </div>
+
+        <div className="flex w-full justify-center space-y-2">
+          <PricingAction
+            planId={id}
+            isSignedIn={isSignedIn}
+            isCurrentPlan={isCurrentPlan}
+          />
+        </div>
       </div>
     </div>
   );
-};
+}
 
-export default function PricingSection() {
+export default async function PricingSection() {
+  const user = await currentUser();
+  let currentPlan: "basic" | "pro" = BASIC_PLAN;
+
+  if (user) {
+    await upsertUserFromClerk(user);
+    const billing = await getUserBillingSnapshot(user.id);
+    currentPlan = billing.plan;
+  }
+
   return (
-    <section className="relative overflow-hidden " id="pricing">
-      <div className="py-12 lg:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-        <div className="flex items-center justify-center w-full pb-12">
-          <h2 className="uppercase font-bold text-xl mb-8 text-rose-500">Pricing</h2>
+    <section className="relative overflow-hidden" id="pricing">
+      <div className="mx-auto max-w-5xl px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:py-24">
+        <div className="flex w-full items-center justify-center pb-12">
+          <h2 className="mb-8 text-xl font-bold uppercase text-rose-500">Pricing</h2>
         </div>
-        <div className="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
+        <div className="relative flex flex-col items-center justify-center gap-8 lg:flex-row lg:items-stretch">
           {plans.map((plan) => (
-            <PricingCard key={plan.id} {...plan} />
+            <PricingCard
+              key={plan.id}
+              {...plan}
+              isSignedIn={Boolean(user)}
+              isCurrentPlan={currentPlan === plan.id}
+            />
           ))}
         </div>
       </div>

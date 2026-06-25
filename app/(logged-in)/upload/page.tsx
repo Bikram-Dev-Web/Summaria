@@ -1,10 +1,20 @@
 import BgGradient from "@/components/common/bg-gradient";
 import UploadForm from "@/components/upload/upload-from";
-
 import UploadHeader from "@/components/upload/upload-header";
+import { upsertUserFromClerk } from "@/lib/users";
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 
-export default function Page() {
+export default async function Page() {
+  const user = await currentUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  await upsertUserFromClerk(user);
+
   return (
     <section className="min-h-screen">
       <BgGradient />
