@@ -1,6 +1,6 @@
 # Summaria
-`https://summaria-y1d6.vercel.app/`
 
+[**View Live Demo**](https://summaria-y1d6.vercel.app/)
 Summari is a Next.js application that turns PDFs into concise, readable AI summaries. Users can upload documents, generate summaries with Gemini or OpenAI, manage saved summaries, and upgrade from a free Basic plan to a Pro subscription with Stripe.
 
 ## Features
